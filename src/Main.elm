@@ -1,10 +1,10 @@
 module Main exposing (main)
 
 import Browser
-import Css exposing (..)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src)
-import Html.Styled.Events exposing (onClick)
+import Html exposing (..)
+import Html.Events exposing (onClick)
+import Html.Attributes exposing (class)
+import Html.Attributes exposing (style)
 
 
 main : Program () Model Msg
@@ -12,7 +12,7 @@ main =
     Browser.sandbox
         { init = init
         , update = update
-        , view = view >> toUnstyled
+        , view = view
         }
 
 
@@ -43,17 +43,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        [ css
-            [ displayFlex
-            , flexDirection row
-            , width (vw 100)
-            , height (vh 100)
-            , fontFamily serif
-            ]
-        ]
-        [ div [ css [ flex (int 1) ] ] []
+        [ class "top" ]
+        [ div [ style "flex" "1" ] []
         , div
-            [ css [ width (px 320), backgroundColor (hex "f8f8f8"), padding (px 16), overflow scroll ] ]
+            [ class "sidebar" ]
             [ text "Hello"
             , button [ onClick Increment ] [ text "inc" ]
             , text (String.fromInt model)

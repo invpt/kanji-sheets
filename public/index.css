@@ -1,0 +1,16 @@
+.top {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+    width: 100vw;
+    height: 100vh;
+    font-family: sans-serif;
+}
+
+.sidebar {
+    width: min(100vw, 320px);
+    background-color: #fcfcfc;
+    padding: 16px;
+    overflow: scroll;
+    border-left: 1px solid lightgray;
+}
