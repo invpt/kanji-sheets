@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, lazy, list, map2, map4, oneOf, string)
@@ -123,20 +123,45 @@ view : Model -> Html Msg
 view model =
     div
         [ class "top" ]
-        [ div [ style "flex" "1" ] (List.map kanjiInfoView model.selectedKanji)
-        , div
-            [ class "sidebar-wrapper" ]
-            [ div
-                [ class "sidebar" ]
-                [ jlptDataView model.jlptData model.selectedKanji
-                ]
+        [ div
+            [ class "sidebar" ]
+            [ jlptDataView model.jlptData model.selectedKanji
             ]
+        , div [ class "output" ] (List.map kanjiInfoView model.selectedKanji)
         ]
 
 
 kanjiInfoView : Kanji -> Html Msg
 kanjiInfoView kanji =
-    div [] [ text kanji.ji ]
+    div [ class "kanji-practice-item" ]
+        [ dl
+            [ class "kanji-description" ]
+            [ dt [] [ text "Meaning" ]
+            , dd [] [ text (String.join ", " kanji.imi) ]
+            , dt [] [ text "On'yomi" ]
+            , dd [] [ text (String.join ", " kanji.onyomi) ]
+            , dt [] [ text "Kun'yomi" ]
+            , dd [] [ text (String.join ", " kanji.kunyomi) ]
+            ]
+        , div
+            [ class "kanji-visuals" ]
+            [ div [ class "kanji-stroke-order" ] [ text kanji.ji ]
+            , div [ class "kanji-practice-boxes" ]
+                (List.map
+                    (\i -> kanjiPracticeBoxView kanji (i <= 6))
+                    (List.range 1 22)
+                )
+            ]
+        ]
+
+
+kanjiPracticeBoxView : Kanji -> Bool -> Html Msg
+kanjiPracticeBoxView kanji showHint =
+    if showHint then
+        div [ class "kanji-practice-box kanji-practice-hint" ] [ text kanji.ji ]
+
+    else
+        div [ class "kanji-practice-box" ] []
 
 
 jlptDataView : JlptData -> List Kanji -> Html Msg

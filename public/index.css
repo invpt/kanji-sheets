@@ -1,24 +1,96 @@
-.top {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap-reverse;
-    font-family: sans-serif;
+@font-face {
+    font-family: 'StrokeOrders';
+    src: url(fonts/KanjiStrokeOrders.ttf);
 }
 
-.sidebar-wrapper {
+.top {
     height: 100vh;
-    width: min(100vw, 400px);
     display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.output {
+    padding: 0.5in;
+    flex: 1;
+    gap: 0.1in;
+    height: calc(100vh - 1in);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.kanji-practice-item {
+    display: flex;
+    flex-direction: column;
+    width: 7.25in;
+}
+
+.kanji-description {
+    all: unset;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.kanji-description > dt {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+      
+.kanji-description > dd {
+    font-size: 14px;
+    margin: 0 30px 0 10px;
+    text-transform: capitalize;
+}
+
+.kanji-visuals {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.kanji-stroke-order {
+    font-family: StrokeOrders;
+    font-size: calc(1in - 12px);
+    margin-right: 0.1in;
+}
+
+.kanji-practice-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.05in;
+    align-content: center;
+}
+
+.kanji-practice-box {
+    width: 0.5in;
+    height: 0.5in;
+    border: 1px solid black;
 }
 
 .sidebar {
-    flex: 1;
+    flex-shrink: 0;
     background-color: white;
     margin: 16px;
     padding: 16px;
     border: 1px solid lightgray;
     border-radius: 8px;
-    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 5in;
+}
+
+@media (max-width: 12.25in) {
+    .top {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: unset;
+        height: 40vh;
+    }
 }
 
 .bubun {
@@ -50,8 +122,9 @@
     user-select: none;
     text-align: center;
     vertical-align: middle;
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
     border-radius: 6px;
     transition: background-color 0.15s, transform 0.15s;
 }
