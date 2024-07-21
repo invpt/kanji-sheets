@@ -60,11 +60,19 @@
     background-color: rgb(232, 232, 232);
 }
 
-.kanji-button:active,
-.kanji-button.selected {
-    background-color: rgb(207, 207, 207);
+.kanji-button:active {
+    background-color: rgb(224, 224, 224);
 }
 
 .kanji-button.selected {
+    background-color: rgb(216, 216, 216);
     transform: scale(0.85);
+}
+
+.kanji-button.selected:hover {
+    background-color: rgb(224, 224, 224);
+}
+
+.kanji-button.selected:active {
+    background-color: rgb(232, 232, 232);
 }
