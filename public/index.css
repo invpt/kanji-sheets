@@ -60,7 +60,8 @@
     background-color: rgb(232, 232, 232);
 }
 
-.kanji-button:active {
+.kanji-button:active,
+.kanji-button.selected {
     background-color: rgb(207, 207, 207);
 }
 

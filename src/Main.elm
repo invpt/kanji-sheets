@@ -96,6 +96,7 @@ kanjiDecoder =
 type Msg
     = GotBubun (Result Http.Error Bubun)
     | SelectedKanji Kanji
+    | DeselectedKanji Kanji
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -108,9 +109,12 @@ update msg model =
             ( { model | jlptData = JlptDataFailure "Couldn't load the JLPT data :(" }, Cmd.none )
 
         SelectedKanji kanji ->
-            ( { model
-                | selectedKanji = model.selectedKanji ++ [ kanji ]
-              }
+            ( { model | selectedKanji = model.selectedKanji ++ [ kanji ] }
+            , Cmd.none
+            )
+
+        DeselectedKanji kanji ->
+            ( { model | selectedKanji = List.filter ((/=) kanji) model.selectedKanji }
             , Cmd.none
             )
 
@@ -124,7 +128,7 @@ view model =
             [ class "sidebar-wrapper" ]
             [ div
                 [ class "sidebar" ]
-                [ jlptDataView model.jlptData
+                [ jlptDataView model.jlptData model.selectedKanji
                 ]
             ]
         ]
@@ -135,11 +139,11 @@ kanjiInfoView kanji =
     div [] [ text kanji.ji ]
 
 
-jlptDataView : JlptData -> Html Msg
-jlptDataView data =
+jlptDataView : JlptData -> List Kanji -> Html Msg
+jlptDataView data selectedKanji =
     case data of
         JlptData bubun ->
-            bubunView bubun
+            bubunView bubun selectedKanji
 
         JlptDataFailure message ->
             div [] [ text message ]
@@ -148,24 +152,36 @@ jlptDataView data =
             div [] [ text "Loading..." ]
 
 
-bubunView : Bubun -> Html Msg
-bubunView bubun =
+bubunView : Bubun -> List Kanji -> Html Msg
+bubunView bubun selectedKanji =
     div [ class "bubun" ]
         [ div [ class "bubun-meishou" ] [ text bubun.meishou ]
-        , bubunNaiyouView bubun.naiyou
+        , bubunNaiyouView bubun.naiyou selectedKanji
         ]
 
 
-bubunNaiyouView : BubunNaiyou -> Html Msg
-bubunNaiyouView bubunNaiyou =
+bubunNaiyouView : BubunNaiyou -> List Kanji -> Html Msg
+bubunNaiyouView bubunNaiyou selectedKanji =
     case bubunNaiyou of
         KanjiBubunNaiyou kanji ->
-            div [ class "kanji-bubun-naiyou" ] (List.map kanjiButtonView kanji)
+            div [ class "kanji-bubun-naiyou" ]
+                (List.map
+                    (\k -> kanjiButtonView k (List.any ((==) k) selectedKanji))
+                    kanji
+                )
 
         BubunBubunNaiyou innerBubun ->
-            div [ class "bubun-bubun-naiyou" ] (List.map bubunView innerBubun)
+            div [ class "bubun-bubun-naiyou" ] (List.map (\b -> bubunView b selectedKanji) innerBubun)
 
 
-kanjiButtonView : Kanji -> Html Msg
-kanjiButtonView kanji =
-    button [ class "kanji-button", onClick (SelectedKanji kanji) ] [ text kanji.ji ]
+kanjiButtonView : Kanji -> Bool -> Html Msg
+kanjiButtonView kanji isSelected =
+    let
+        attrs =
+            if isSelected then
+                [ class "kanji-button selected", onClick (DeselectedKanji kanji) ]
+
+            else
+                [ class "kanji-button", onClick (SelectedKanji kanji) ]
+    in
+    button attrs [ text kanji.ji ]
