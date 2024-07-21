@@ -1,43 +1,97 @@
 module Main exposing (main)
 
 import Browser
+import Dict exposing (Dict)
 import Html exposing (..)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (class)
-import Html.Attributes exposing (style)
+import Http
+import Json.Decode exposing (Decoder, dict, field, list, map3, string)
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , update = update
+        , subscriptions = subscriptions
         , view = view
         }
 
 
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
 type alias Model =
-    Int
+    { jlptData : JlptData }
 
 
-init : Model
-init =
-    0
+type JlptData
+    = JlptData KanjiCategories
+    | JlptDataFailure String
+    | JlptDataLoading
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { jlptData = JlptDataLoading }, getJlptData )
+
+
+getJlptData : Cmd Msg
+getJlptData =
+    Http.get
+        { url = "data/jlpt.json"
+        , expect = Http.expectJson GotJlptData kanjiCategoriesDecoder
+        }
 
 
 type Msg
-    = Increment
-    | Decrement
+    = GotJlptData (Result Http.Error KanjiCategories)
 
 
-update : Msg -> Model -> Model
+type alias KanjiCategories =
+    Dict String KanjiCategory
+
+
+type alias KanjiCategory =
+    Dict String KanjiInfo
+
+
+type alias KanjiInfo =
+    { meanings : List String
+    , onyomi : List String
+    , kunyomi : List String
+    }
+
+
+kanjiCategoriesDecoder : Decoder KanjiCategories
+kanjiCategoriesDecoder =
+    dict kanjiCategoryDecoder
+
+
+kanjiCategoryDecoder : Decoder KanjiCategory
+kanjiCategoryDecoder =
+    dict kanjiInfoDecoder
+
+
+kanjiInfoDecoder : Decoder KanjiInfo
+kanjiInfoDecoder =
+    map3 KanjiInfo
+        (field "m" (list string))
+        (field "k" (list string))
+        (field "o" (list string))
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            model + 1
+        GotJlptData (Ok cats) ->
+            ( { model | jlptData = JlptData cats }, Cmd.none )
 
-        Decrement ->
-            model - 1
+        GotJlptData (Err _) ->
+            ( { model | jlptData = JlptDataFailure "Couldn't load the JLPT data :(" }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -48,7 +102,29 @@ view model =
         , div
             [ class "sidebar" ]
             [ text "Hello"
-            , button [ onClick Increment ] [ text "inc" ]
-            , text (String.fromInt model)
+            , jlptDataView model.jlptData
             ]
         ]
+
+
+jlptDataView : JlptData -> Html Msg
+jlptDataView data =
+    case data of
+        JlptData cats ->
+            div [] (List.map kanjiCategoryView (Dict.toList cats))
+
+        JlptDataFailure _ ->
+            div [] []
+
+        JlptDataLoading ->
+            div [] []
+
+
+kanjiCategoryView : ( String, KanjiCategory ) -> Html Msg
+kanjiCategoryView ( name, cat ) =
+    div [] (List.map kanjiInfoView (Dict.toList cat))
+
+
+kanjiInfoView : ( String, KanjiInfo ) -> Html Msg
+kanjiInfoView ( kanji, info ) =
+    div [] [ text kanji ]
