@@ -5,11 +5,45 @@
     font-family: sans-serif;
 }
 
-.sidebar {
+.sidebar-wrapper {
     height: 100vh;
-    width: min(100vw, 320px);
-    background-color: #fcfcfc;
+    width: min(100vw, 400px);
+    display: flex;
+}
+
+.sidebar {
+    flex: 1;
+    background-color: white;
+    margin: 16px;
     padding: 16px;
+    border: 1px solid lightgray;
+    border-radius: 8px;
     overflow: scroll;
-    border-left: 1px solid lightgray;
+}
+
+.kanji-category {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.kanji-button {
+    all: unset;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    vertical-align: middle;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.kanji-button:hover {
+    background-color: rgb(232, 232, 232);
+}
+
+.kanji-button:active {
+    background-color: rgb(207, 207, 207);
+    transform: scale(0.75);
 }

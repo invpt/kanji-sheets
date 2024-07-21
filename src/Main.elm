@@ -47,10 +47,6 @@ getJlptData =
         }
 
 
-type Msg
-    = GotJlptData (Result Http.Error KanjiCategories)
-
-
 type alias KanjiCategories =
     Dict String KanjiCategory
 
@@ -84,6 +80,11 @@ kanjiInfoDecoder =
         (field "o" (list string))
 
 
+type Msg
+    = GotJlptData (Result Http.Error KanjiCategories)
+    | SelectedKanji String KanjiInfo
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -93,6 +94,9 @@ update msg model =
         GotJlptData (Err _) ->
             ( { model | jlptData = JlptDataFailure "Couldn't load the JLPT data :(" }, Cmd.none )
 
+        SelectedKanji _ _ ->
+            ( model, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -100,9 +104,12 @@ view model =
         [ class "top" ]
         [ div [ style "flex" "1" ] []
         , div
-            [ class "sidebar" ]
-            [ text "Hello"
-            , jlptDataView model.jlptData
+            [ class "sidebar-wrapper" ]
+            [ div
+                [ class "sidebar" ]
+                [ text "Hello"
+                , jlptDataView model.jlptData
+                ]
             ]
         ]
 
@@ -111,7 +118,7 @@ jlptDataView : JlptData -> Html Msg
 jlptDataView data =
     case data of
         JlptData cats ->
-            div [] (List.map kanjiCategoryView (Dict.toList cats))
+            div [ class "kanji-categories" ] (List.map kanjiCategoryView (Dict.toList cats))
 
         JlptDataFailure _ ->
             div [] []
@@ -122,9 +129,9 @@ jlptDataView data =
 
 kanjiCategoryView : ( String, KanjiCategory ) -> Html Msg
 kanjiCategoryView ( name, cat ) =
-    div [] (List.map kanjiInfoView (Dict.toList cat))
+    div [ class "kanji-category" ] (List.map kanjiButtonView (Dict.toList cat))
 
 
-kanjiInfoView : ( String, KanjiInfo ) -> Html Msg
-kanjiInfoView ( kanji, info ) =
-    div [] [ text kanji ]
+kanjiButtonView : ( String, KanjiInfo ) -> Html Msg
+kanjiButtonView ( kanji, info ) =
+    button [ class "kanji-button", onClick (SelectedKanji kanji info) ] [ text kanji ]
