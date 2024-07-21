@@ -25,7 +25,9 @@ subscriptions _ =
 
 
 type alias Model =
-    { jlptData : JlptData }
+    { jlptData : JlptData
+    , selectedKanji : KanjiCategory
+    }
 
 
 type JlptData
@@ -36,7 +38,7 @@ type JlptData
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { jlptData = JlptDataLoading }, getJlptData )
+    ( { jlptData = JlptDataLoading, selectedKanji = Dict.empty }, getJlptData )
 
 
 getJlptData : Cmd Msg
@@ -94,15 +96,19 @@ update msg model =
         GotJlptData (Err _) ->
             ( { model | jlptData = JlptDataFailure "Couldn't load the JLPT data :(" }, Cmd.none )
 
-        SelectedKanji _ _ ->
-            ( model, Cmd.none )
+        SelectedKanji kanji info ->
+            ( { model
+                | selectedKanji = Dict.update kanji (\_ -> Just info) model.selectedKanji
+              }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
 view model =
     div
         [ class "top" ]
-        [ div [ style "flex" "1" ] []
+        [ div [ style "flex" "1" ] (List.map kanjiInfoView (Dict.toList model.selectedKanji))
         , div
             [ class "sidebar-wrapper" ]
             [ div
@@ -114,11 +120,16 @@ view model =
         ]
 
 
+kanjiInfoView : ( String, KanjiInfo ) -> Html Msg
+kanjiInfoView ( kanji, info ) =
+    div [] [ text kanji ]
+
+
 jlptDataView : JlptData -> Html Msg
 jlptDataView data =
     case data of
         JlptData cats ->
-            div [ class "kanji-categories" ] (List.map kanjiCategoryView (Dict.toList cats))
+            div [ class "kanji-categories" ] (List.map kanjiSelectorCategoryView (Dict.toList cats))
 
         JlptDataFailure _ ->
             div [] []
@@ -127,8 +138,8 @@ jlptDataView data =
             div [] []
 
 
-kanjiCategoryView : ( String, KanjiCategory ) -> Html Msg
-kanjiCategoryView ( name, cat ) =
+kanjiSelectorCategoryView : ( String, KanjiCategory ) -> Html Msg
+kanjiSelectorCategoryView ( name, cat ) =
     div [ class "kanji-category" ] (List.map kanjiButtonView (Dict.toList cat))
 
 
