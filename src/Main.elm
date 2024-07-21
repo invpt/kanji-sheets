@@ -1,12 +1,11 @@
 module Main exposing (main)
 
 import Browser
-import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, dict, field, list, map3, string)
+import Json.Decode exposing (Decoder, field, lazy, list, map2, map4, oneOf, string)
 
 
 main : Program () Model Msg
@@ -26,79 +25,91 @@ subscriptions _ =
 
 type alias Model =
     { jlptData : JlptData
-    , selectedKanji : KanjiCategory
+    , selectedKanji : List Kanji
     }
-
-
-type JlptData
-    = JlptData KanjiCategories
-    | JlptDataFailure String
-    | JlptDataLoading
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { jlptData = JlptDataLoading, selectedKanji = Dict.empty }, getJlptData )
+    ( { jlptData = JlptDataLoading, selectedKanji = [] }, getJlptData )
 
 
 getJlptData : Cmd Msg
 getJlptData =
     Http.get
         { url = "data/jlpt.json"
-        , expect = Http.expectJson GotJlptData kanjiCategoriesDecoder
+        , expect = Http.expectJson GotBubun bubunDecoder
         }
 
 
-type alias KanjiCategories =
-    Dict String KanjiCategory
+type JlptData
+    = JlptDataLoading
+    | JlptDataFailure String
+    | JlptData Bubun
 
 
-type alias KanjiCategory =
-    Dict String KanjiInfo
+type alias Bubun =
+    { meishou : String
+    , naiyou : BubunNaiyou
+    }
 
 
-type alias KanjiInfo =
-    { meanings : List String
+type BubunNaiyou
+    = KanjiBubunNaiyou (List Kanji)
+    | BubunBubunNaiyou (List Bubun)
+
+
+type alias Kanji =
+    { ji : String
+    , imi : List String
     , onyomi : List String
     , kunyomi : List String
     }
 
 
-kanjiCategoriesDecoder : Decoder KanjiCategories
-kanjiCategoriesDecoder =
-    dict kanjiCategoryDecoder
+bubunDecoder : Decoder Bubun
+bubunDecoder =
+    map2 Bubun
+        (field "m" string)
+        (oneOf [ field "k" kanjiBubunNaiyouDecoder, field "b" bubunBubunNaiyouDecoder ])
 
 
-kanjiCategoryDecoder : Decoder KanjiCategory
-kanjiCategoryDecoder =
-    dict kanjiInfoDecoder
+kanjiBubunNaiyouDecoder : Decoder BubunNaiyou
+kanjiBubunNaiyouDecoder =
+    Json.Decode.map KanjiBubunNaiyou (list kanjiDecoder)
 
 
-kanjiInfoDecoder : Decoder KanjiInfo
-kanjiInfoDecoder =
-    map3 KanjiInfo
-        (field "m" (list string))
+bubunBubunNaiyouDecoder : Decoder BubunNaiyou
+bubunBubunNaiyouDecoder =
+    Json.Decode.map BubunBubunNaiyou (list (lazy (\_ -> bubunDecoder)))
+
+
+kanjiDecoder : Decoder Kanji
+kanjiDecoder =
+    map4 Kanji
+        (field "j" string)
+        (field "i" (list string))
         (field "k" (list string))
         (field "o" (list string))
 
 
 type Msg
-    = GotJlptData (Result Http.Error KanjiCategories)
-    | SelectedKanji String KanjiInfo
+    = GotBubun (Result Http.Error Bubun)
+    | SelectedKanji Kanji
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotJlptData (Ok cats) ->
-            ( { model | jlptData = JlptData cats }, Cmd.none )
+        GotBubun (Ok bubun) ->
+            ( { model | jlptData = JlptData bubun }, Cmd.none )
 
-        GotJlptData (Err _) ->
+        GotBubun (Err _) ->
             ( { model | jlptData = JlptDataFailure "Couldn't load the JLPT data :(" }, Cmd.none )
 
-        SelectedKanji kanji info ->
+        SelectedKanji kanji ->
             ( { model
-                | selectedKanji = Dict.update kanji (\_ -> Just info) model.selectedKanji
+                | selectedKanji = kanji :: model.selectedKanji
               }
             , Cmd.none
             )
@@ -108,7 +119,7 @@ view : Model -> Html Msg
 view model =
     div
         [ class "top" ]
-        [ div [ style "flex" "1" ] (List.map kanjiInfoView (Dict.toList model.selectedKanji))
+        [ div [ style "flex" "1" ] (List.map kanjiInfoView model.selectedKanji)
         , div
             [ class "sidebar-wrapper" ]
             [ div
@@ -120,16 +131,16 @@ view model =
         ]
 
 
-kanjiInfoView : ( String, KanjiInfo ) -> Html Msg
-kanjiInfoView ( kanji, info ) =
-    div [] [ text kanji ]
+kanjiInfoView : Kanji -> Html Msg
+kanjiInfoView kanji =
+    div [] [ text kanji.ji ]
 
 
 jlptDataView : JlptData -> Html Msg
 jlptDataView data =
     case data of
-        JlptData cats ->
-            div [ class "kanji-categories" ] (List.map kanjiSelectorCategoryView (Dict.toList cats))
+        JlptData bubun ->
+            div [ class "kanji-categories" ] [ kanjiSelectorCategoryView bubun ]
 
         JlptDataFailure _ ->
             div [] []
@@ -138,11 +149,16 @@ jlptDataView data =
             div [] []
 
 
-kanjiSelectorCategoryView : ( String, KanjiCategory ) -> Html Msg
-kanjiSelectorCategoryView ( name, cat ) =
-    div [ class "kanji-category" ] (List.map kanjiButtonView (Dict.toList cat))
+kanjiSelectorCategoryView : Bubun -> Html Msg
+kanjiSelectorCategoryView bubun =
+    case bubun.naiyou of
+        KanjiBubunNaiyou kanji ->
+            div [ class "kanji-category" ] (List.map kanjiButtonView kanji)
+
+        BubunBubunNaiyou innerBubun ->
+            div [ class "kanji-categories" ] (List.map kanjiSelectorCategoryView innerBubun)
 
 
-kanjiButtonView : ( String, KanjiInfo ) -> Html Msg
-kanjiButtonView ( kanji, info ) =
-    button [ class "kanji-button", onClick (SelectedKanji kanji info) ] [ text kanji ]
+kanjiButtonView : Kanji -> Html Msg
+kanjiButtonView kanji =
+    button [ class "kanji-button", onClick (SelectedKanji kanji) ] [ text kanji.ji ]
