@@ -21,10 +21,27 @@
     overflow: scroll;
 }
 
-.kanji-category {
+.bubun {
+
+}
+
+.bubun-meishou {
+    display: block;
+    font-size: 18px;
+    border-bottom: 1px solid lightgray;
+}
+
+.kanji-bubun-naiyou {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+}
+
+.bubun-bubun-naiyou {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 4px;
 }
 
 .kanji-button {
@@ -45,5 +62,8 @@
 
 .kanji-button:active {
     background-color: rgb(207, 207, 207);
-    transform: scale(0.75);
+}
+
+.kanji-button.selected {
+    transform: scale(0.85);
 }

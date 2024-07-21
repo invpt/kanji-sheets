@@ -109,7 +109,7 @@ update msg model =
 
         SelectedKanji kanji ->
             ( { model
-                | selectedKanji = kanji :: model.selectedKanji
+                | selectedKanji = model.selectedKanji ++ [ kanji ]
               }
             , Cmd.none
             )
@@ -124,8 +124,7 @@ view model =
             [ class "sidebar-wrapper" ]
             [ div
                 [ class "sidebar" ]
-                [ text "Hello"
-                , jlptDataView model.jlptData
+                [ jlptDataView model.jlptData
                 ]
             ]
         ]
@@ -140,23 +139,31 @@ jlptDataView : JlptData -> Html Msg
 jlptDataView data =
     case data of
         JlptData bubun ->
-            div [ class "kanji-categories" ] [ kanjiSelectorCategoryView bubun ]
+            bubunView bubun
 
-        JlptDataFailure _ ->
-            div [] []
+        JlptDataFailure message ->
+            div [] [ text message ]
 
         JlptDataLoading ->
-            div [] []
+            div [] [ text "Loading..." ]
 
 
-kanjiSelectorCategoryView : Bubun -> Html Msg
-kanjiSelectorCategoryView bubun =
-    case bubun.naiyou of
+bubunView : Bubun -> Html Msg
+bubunView bubun =
+    div [ class "bubun" ]
+        [ div [ class "bubun-meishou" ] [ text bubun.meishou ]
+        , bubunNaiyouView bubun.naiyou
+        ]
+
+
+bubunNaiyouView : BubunNaiyou -> Html Msg
+bubunNaiyouView bubunNaiyou =
+    case bubunNaiyou of
         KanjiBubunNaiyou kanji ->
-            div [ class "kanji-category" ] (List.map kanjiButtonView kanji)
+            div [ class "kanji-bubun-naiyou" ] (List.map kanjiButtonView kanji)
 
         BubunBubunNaiyou innerBubun ->
-            div [ class "kanji-categories" ] (List.map kanjiSelectorCategoryView innerBubun)
+            div [ class "bubun-bubun-naiyou" ] (List.map bubunView innerBubun)
 
 
 kanjiButtonView : Kanji -> Html Msg
