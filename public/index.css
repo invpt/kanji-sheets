@@ -18,7 +18,7 @@
     align-items: center;
     margin: 16px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.273);
-    --in: calc((100vh - 32px) / 12);
+    --in: calc(min((100vh - 32px) / 12, (100vw - 576px) / 9.5));
     padding: calc(0.5 * var(--in));
     gap: calc(0.1 * var(--in));
     height: calc(11 * var(--in));
@@ -75,7 +75,7 @@
 .kanji-practice-box {
     width: calc(0.5 * var(--in));
     height: calc(0.5 * var(--in));
-    border: calc(0.01 * var(--in)) solid black;
+    box-shadow: 0 0 0 1px black;
 }
 
 .sidebar {
