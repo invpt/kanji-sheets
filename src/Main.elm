@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, lazy, list, map2, map4, oneOf, string)
@@ -127,7 +127,9 @@ view model =
             [ class "sidebar" ]
             [ jlptDataView model.jlptData model.selectedKanji
             ]
+        , div [ style "flex" "1" ] []
         , div [ class "output" ] (List.map kanjiInfoView model.selectedKanji)
+        , div [ style "flex" "1" ] []
         ]
 
 
