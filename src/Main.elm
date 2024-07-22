@@ -149,7 +149,7 @@ kanjiInfoView kanji =
             , div [ class "kanji-practice-boxes" ]
                 (List.map
                     (\i -> kanjiPracticeBoxView kanji (i <= 6))
-                    (List.range 1 22)
+                    (List.range 1 24)
                 )
             ]
         ]
