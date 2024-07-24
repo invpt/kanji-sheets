@@ -89,8 +89,8 @@ kanjiDecoder =
     map4 Kanji
         (field "j" string)
         (field "i" (list string))
-        (field "k" (list string))
         (field "o" (list string))
+        (field "k" (list string))
 
 
 type Msg
