@@ -3,6 +3,11 @@
     src: url(fonts/KanjiStrokeOrders.ttf);
 }
 
+@font-face {
+    font-family: 'YOzFont';
+    src: url(fonts/YOzFont.ttf);
+}
+
 .top {
     width: 100vw;
     height: 100vh;
@@ -76,6 +81,15 @@
     width: calc(0.5 * var(--in));
     height: calc(0.5 * var(--in));
     box-shadow: 0 0 0 1px black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kanji-practice-hint {
+    font-size: calc(0.4 * var(--in));
+    font-family: YOzFont;
+    color: gray;
 }
 
 .sidebar {
