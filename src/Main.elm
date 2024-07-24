@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, src, style)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, lazy, list, map2, map4, oneOf, string)
@@ -160,10 +160,14 @@ kanjiInfoView kanji =
 kanjiPracticeBoxView : Kanji -> Bool -> Html Msg
 kanjiPracticeBoxView kanji showHint =
     if showHint then
-        div [ class "kanji-practice-box kanji-practice-hint" ] [ text kanji.ji ]
+        div [ class "kanji-practice-box kanji-practice-hint" ]
+            [ img [ class "kanji-practice-guide-lines", src "images/guide-lines.svg" ] []
+            , text kanji.ji
+            ]
 
     else
-        div [ class "kanji-practice-box" ] []
+        div [ class "kanji-practice-box" ]
+            [ img [ class "kanji-practice-guide-lines", src "images/guide-lines.svg" ] [] ]
 
 
 jlptDataView : JlptData -> List Kanji -> Html Msg
