@@ -32,6 +32,21 @@
     overflow-x: hidden;
 }
 
+@media print {
+    .sidebar {
+        display: none !important;
+    }
+
+    .output {
+        width: 100%;
+        height: 100%;
+        --in: 1in;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+}
+
 .kanji-practice-item {
     display: flex;
     flex-direction: column;
